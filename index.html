@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Priya — Tiny Scrapbook</title>
+    <link href="https://fonts.googleapis.com/css2?family=Handlee&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="main.css">
+    <meta name="color-scheme" content="light dark">
+</head>
+<body>
+    <main class="page">
+        <nav class="topnav">
+            <span class="logo">✦</span>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about" id="aboutLink">About</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <section id="home" class="hero">
+            <div class="scrapbook">
+                <figure class="photo">
+                    <img src="myphoto.jpg" alt="Priya's photo">
+                    <figcaption>me, trying new things</figcaption>
+                </figure>
+
+                <article class="intro">
+                    <h1>Hi — I'm Priya</h1>
+                    <p class="handwritten">Welcome to my tiny digital scrapbook.</p>
+                    <p class="typewriter">I am <span id="typed"></span><span class="caret">|</span></p>
+
+                    <p class="actions">
+                        <a class="btn" href="#about" id="learnMore">Learn more</a>
+                        <a class="btn ghost" href="#contact">Contact</a>
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section id="about" class="panel">
+            <h2>About Me</h2>
+            <p>Building my journey in web development. I build small creative experiments and learn by making. I am passionate about web development and love creating websites that are simple, clean and user-friendly.</p>
+        </section>
+
+        <section id="skills" class="panel">
+            <h2>Skills</h2>
+            <ul class="skills-list">
+                <li>Coding</li>
+                <li>Designing websites</li>
+            </ul>
+        </section>
+
+        <section id="contact" class="panel">
+            <h2>Contact</h2>
+            <p>Email: <a href="mailto:alurpriya1@gmail.com">alurpriya1@gmail.com</a></p>
+        </section>
+
+        <footer class="site-footer">© 2025 Priya — Tiny Scrapbook</footer>
+    </main>
+
+    <!-- About edit/share modal -->
+    <div id="aboutModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <header>
+                <h3>Edit About</h3>
+                <button class="close" id="aboutClose">✕</button>
+            </header>
+            <textarea id="aboutInput" rows="6"></textarea>
+            <p class="modal-actions">
+                <button id="aboutSave" class="btn">Save</button>
+                <button id="aboutCopy" class="btn ghost">Copy/Share</button>
+            </p>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        const phrases = [
+            'a curious coder',
+            'learning HTML, CSS & Java',
+            'making tiny experiments'
+        ];
+
+        const typedEl = document.getElementById('typed');
+        const caret = document.querySelector('.caret');
+        let pi = 0, ci = 0;
+
+        function type() {
+            const text = phrases[pi];
+            if (ci < text.length) {
+                typedEl.textContent += text[ci++];
+                setTimeout(type, 80);
+            } else {
+                setTimeout(erase, 1000);
+            }
+        }
+
+        function erase() {
+            const text = phrases[pi];
+            if (ci > 0) {
+                typedEl.textContent = text.slice(0, --ci);
+                setTimeout(erase, 40);
+            } else {
+                pi = (pi + 1) % phrases.length;
+                setTimeout(type, 300);
+            }
+        }
+
+        // blinking caret
+        setInterval(() => caret.style.opacity = (caret.style.opacity == '0' ? '1' : '0'), 500);
+        type();
+
+        // Modal & share functionality
+        const aboutLink = document.getElementById('aboutLink');
+        const aboutModal = document.getElementById('aboutModal');
+        const aboutClose = document.getElementById('aboutClose');
+        const aboutInput = document.getElementById('aboutInput');
+        const aboutSave = document.getElementById('aboutSave');
+        const aboutCopy = document.getElementById('aboutCopy');
+        const toast = document.getElementById('toast');
+        const aboutParagraph = document.querySelector('#about .panel p') || document.querySelector('#about p');
+
+        function showToast(msg){
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(()=> toast.classList.remove('show'),2000);
+        }
+
+        function openAboutModal(e){
+            e && e.preventDefault();
+            aboutInput.value = aboutParagraph ? aboutParagraph.textContent.trim() : '';
+            aboutModal.setAttribute('aria-hidden','false');
+            aboutModal.classList.add('show');
+            aboutInput.focus();
+        }
+
+        function closeAboutModal(){
+            aboutModal.setAttribute('aria-hidden','true');
+            aboutModal.classList.remove('show');
+        }
+
+        aboutLink.addEventListener('click', openAboutModal);
+        aboutClose.addEventListener('click', closeAboutModal);
+        aboutModal.addEventListener('click', (ev)=>{ if(ev.target===aboutModal) closeAboutModal(); });
+
+        // Learn more: populate About with provided bio and open modal
+        const learnMore = document.getElementById('learnMore');
+        const learnMoreBio = "Hi, I’m a Diploma computer science student with a strong interest in web development and programming. I am currently learning HTML, CSS, and Java, and I enjoy building simple, clean, and responsive websites. I’m passionate about improving my skills and creating projects that help me grow as a developer.";
+        if(learnMore) learnMore.addEventListener('click', (e)=>{
+            e.preventDefault();
+            if(aboutParagraph) aboutParagraph.textContent = learnMoreBio;
+            if(aboutInput) aboutInput.value = learnMoreBio;
+            openAboutModal();
+        });
+
+        aboutSave.addEventListener('click', ()=>{
+            if(aboutParagraph){
+                aboutParagraph.textContent = aboutInput.value.trim() || 'Building my journey in web development.';
+                showToast('About updated');
+            }
+            closeAboutModal();
+        });
+
+        aboutCopy.addEventListener('click', async ()=>{
+            try{
+                await navigator.clipboard.writeText(aboutInput.value);
+                showToast('Copied to clipboard — you can paste to share');
+            }catch(e){
+                showToast('Copy failed — select and copy manually');
+            }
+        });
+    </script>
+</body>
+</html>
